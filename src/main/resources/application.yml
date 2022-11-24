@@ -1,2 +1,10 @@
-{
-    }
+scheduler:
+  enabled: true
+spring:
+  main:
+    banner-mode: 'off'
+  profiles:
+    active: dev
+
+  application:
+    name: bpr-h2h-crb-notifications

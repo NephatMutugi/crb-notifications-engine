@@ -1,10 +1,88 @@
-scheduler:
-  enabled: true
 spring:
+  datasource:
+    url: ${JDBC_URL:jdbc:oracle:thin:@//10.219.2.45:1521/knob12}
+    username: ${DATABASE_USERNAME:loyaltyinhouse}
+    password: ${DATABASE_PASSWORD:LOyalty!!321Test}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
   main:
     banner-mode: 'off'
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile:
 
-  application:
-    name: bpr-h2h-crb-notifications
+server:
+  port: 8080
+
+scheduler:
+  enabled: true
+  frequency: ${SCHEDULER_FREQUENCY:7200000}
+
+t24:
+  crb-template:
+    aaConsumer: CRB_AA_DATA_EXTRACT_CONSUMER.json
+    aaCorporate: CRB_AA_DATA_EXTRACT_CORPORATE.json
+    ldConsumer: CRB_LD_DATA_EXTRACT_CONSUMER.json
+    ldCorporate: CRB_LD_DATA_EXTRACT_CORPORATE.json
+    odConsumer: CRB_OD_DATA_EXTRACT_CONSUMER.json
+    odCorporate: CRB_OD_DATA_EXTRACT_CORPORATE.json
+    pdConsumer: CRB_PD_DATA_EXTRACT_CONSUMER.json
+    pdCorporate: CRB_PD_DATA_EXTRACT_CORPORATE.json
+
+
+
+sftp:
+  server:
+    #    SFTP
+    host: ${SFTP_SERVER_HOST:10.216.1.64}
+    username: ${SFTP_SERVER_USERNAME:ken20549}
+    password: ${SFTP_SERVER_PASSWORD:dontChangeSudoFile2022!}
+    filepath: ${SFTP_SERVER_FILEPATH:/home/ken20549/T24UPLOADS}
+    known-hosts: ${SFTP_SERVER_KNOWN_HOSTS:'22 SSH-2.0-OpenSSH_7.4'}
+
+
+    #   HTTP CLIENT
+    http-connection-request-timeout: ${HTTP_CONNECTION_REQUEST_TIMEOUT:60000}
+    http-connection-timeout: ${HTTP_CONNECTION_TIMEOUT:60000}
+    http-connection-read-timeout: ${HTTP_CONNECTION_READ_TIMEOUT:60000}
+
+crb:
+  base-url: ${CRB_TOKEN_BASE_URL:http://172.17.152.67:9545}
+  token-base-resource: ${CRB_TOKEN_BASE_RESOURCE:/duv2/login}
+  notifications-base-resource: ${CRB_NOTIFICATIONS_BASE_RESOURCE_CONSUMER:/duv2/data/rw/update/consumercredit}
+  notifications-base-resource-corporate: ${CRB_NOTIFICATIONS_BASE_RESOURCE_CORPORATE:/duv2/data/rw/update/corporatecredit}
+  username: ${CRB_TOKEN_USERNAME:RWDU_bpr}
+  password: ${CRB_TOKEN_PASSWORD:TmLcx+LlyzD29-P}
+  infinity-code: ${CRB_TOKEN_INFINITY_CODE:rw123456789}
+
+  consumer-record-type: ${CONSUMER_RECORD_TYPE:IC}
+  corporate-record-type: ${CORPORATE_RECORD_TYPE:CC}
+  failed-requests: ${FAILED_REQUESTS:FAILED}
+  maximum-retries: 5
+
+
+management:
+  endpoint:
+    health:
+      enabled: true
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    jmx:
+      exposure:
+        include:
+          - "*"
+    web:
+      exposure:
+        include:
+          - "*"
+  health:
+    livenessstate:
+      enabled: true
+    readynessstate:
+      enabled: true

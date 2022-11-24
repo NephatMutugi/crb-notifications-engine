@@ -1,4 +1,7 @@
-package com.bpr.main.client;/**
-@ Author NMuchiri
-**/public class TokenGenClient {
+package com.bpr.main.client;
+
+/**
+ * @ Author NMuchiri
+ **/
+public class TokenGenClient {
 }
