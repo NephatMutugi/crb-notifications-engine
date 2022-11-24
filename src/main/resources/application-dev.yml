@@ -3,7 +3,7 @@ spring:
     url: ${JDBC_URL:jdbc:oracle:thin:@//10.219.2.45:1521/knob12}
     username: ${DATABASE_USERNAME:loyaltyinhouse}
     password: ${DATABASE_PASSWORD:LOyalty!!321Test}
-    driver-class-name: oracle.jdbc.OracleDriver
+#    driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
   main:
