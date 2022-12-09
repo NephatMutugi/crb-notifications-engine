@@ -38,8 +38,9 @@ sftp:
     host: ${SFTP_SERVER_HOST:10.216.1.64}
     username: ${SFTP_SERVER_USERNAME:ken20549}
     password: ${SFTP_SERVER_PASSWORD:dontChangeSudoFile2022!}
-    filepath: ${SFTP_SERVER_FILEPATH:/home/ken20549/T24UPLOADS}
+    filepath: ${SFTP_SERVER_FILEPATH:D:\KCB\bpr\CrbNotificationsReactive\src\main\resources\files\corporate.json}
     known-hosts: ${SFTP_SERVER_KNOWN_HOSTS:'22 SSH-2.0-OpenSSH_7.4'}
+
 
 
     #   HTTP CLIENT
@@ -55,6 +56,8 @@ crb:
   username: ${CRB_TOKEN_USERNAME:RWDU_bpr}
   password: ${CRB_TOKEN_PASSWORD:TmLcx+LlyzD29-P}
   infinity-code: ${CRB_TOKEN_INFINITY_CODE:rw123456789}
+  queue-capacity: ${QUEUE_CAPACITY:400}
+  consumer-threads: ${CONSUMER_THREADS:50}
 
   consumer-record-type: ${CONSUMER_RECORD_TYPE:IC}
   corporate-record-type: ${CORPORATE_RECORD_TYPE:CC}
