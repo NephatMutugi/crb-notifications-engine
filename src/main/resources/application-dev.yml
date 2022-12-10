@@ -60,7 +60,7 @@ crb:
   consumer-threads: ${CONSUMER_THREADS:50}
 
   consumer-record-type: ${CONSUMER_RECORD_TYPE:IC}
-  corporate-record-type: ${CORPORATE_RECORD_TYPE:CC}
+  corporate-record-type: ${CORPORATE_RECORD_TYPE:CI}
   failed-requests: ${FAILED_REQUESTS:FAILED}
   maximum-retries: 5
 

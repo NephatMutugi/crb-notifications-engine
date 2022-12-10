@@ -1,5 +1,6 @@
 package com.bpr.main.utils;
 
+import com.bpr.main.client.TokenGenClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -20,6 +21,8 @@ import java.util.TimeZone;
 @Service
 @Slf4j
 public class Utils {
+
+
     /*--------------------- VALIDATE IF JSON IS VALID -------------------------*/
     public Boolean validateJson(String request) {
         try {
@@ -67,5 +70,6 @@ public class Utils {
         }
         return object;
     }
+
 
 }
