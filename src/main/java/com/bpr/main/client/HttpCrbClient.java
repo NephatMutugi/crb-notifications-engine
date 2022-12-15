@@ -146,7 +146,6 @@ public class HttpCrbClient {
         }
 
         executor.shutdown();
-
         log.info("SHUT DOWN THREADS");
         long endTime = System.currentTimeMillis();
         log.info(BOARDER);
