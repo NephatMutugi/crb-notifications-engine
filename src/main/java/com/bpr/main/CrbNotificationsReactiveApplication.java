@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class CrbNotificationsReactiveApplication {
 
+
+
     public static void main(String[] args) {
         SpringApplication.run(CrbNotificationsReactiveApplication.class, args);
     }

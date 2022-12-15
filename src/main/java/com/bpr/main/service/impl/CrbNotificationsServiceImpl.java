@@ -63,48 +63,62 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
         if (!requests.isEmpty()){
             // We have some requests
 
-            List<HashMap<String, String>> responseMapList =httpClient.dumpRequestsToCrb(requests, "CI");
+//            CompletableFuture<List<HashMap<String, String>>> completableFuture =httpClient.dumpRequestsToCrb(requests, "CI");
+            List<HashMap<String, String>> responseMapList = httpClient.dumpRequestsToCrb(requests, "CI");
+//            try {
+//                responseMapList = completableFuture.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                log.error("---- ERROR WHILE GETTING RESPONSE FROM COMPLETABLE FUTURE -----");
+//                Thread.currentThread().interrupt();
+//            }
 
-            for (HashMap<String , String> responseMap : responseMapList){
-                String responseCode = responseMap.get(RESPONSE_CODE);
-                String responseBody = responseMap.get(RESPONSE_BODY);
-                String requestBody = responseMap.get(REQUEST_BODY);
+            if (responseMapList != null){
+                for (HashMap<String , String> responseMap : responseMapList){
+                    String responseCode = responseMap.get(RESPONSE_CODE);
+                    String responseBody = responseMap.get(RESPONSE_BODY);
+                    String requestBody = responseMap.get(REQUEST_BODY);
 
-                if (responseCode.equals("000")){
-                    // REQUEST WAS SUCCESSFULLY RECEIVED BY CRB AND GOT A RESPONSE BACK
-                    Gson gson = new Gson();
-                    CrbNotificationResponse crbNotificationResponse = gson.fromJson(responseBody, CrbNotificationResponse.class);
-                    String notificationsResponseCode = crbNotificationResponse.getResponseCode();
+                    if (responseCode.equals("000")){
+                        // REQUEST WAS SUCCESSFULLY RECEIVED BY CRB AND GOT A RESPONSE BACK
+                        Gson gson = new Gson();
+                        CrbNotificationResponse crbNotificationResponse = gson.fromJson(responseBody, CrbNotificationResponse.class);
+                        String notificationsResponseCode = crbNotificationResponse.getResponseCode();
 
-                    if (notificationsResponseCode.equals("200")){
-                        log.info(BOARDER_LINE);
-                        log.info("-------------------SUCCESS NOTIFICATIONS RESPONSE----------------------");
-                        crbNotificationList = saveProcessedRequests(responseCode,
-                                "SUCCESS",
-                                requestBody,
-                                responseBody
-                                );
+                        if (notificationsResponseCode.equals("200")){
+                            log.info(BOARDER_LINE);
+                            log.info("-------------------SUCCESS NOTIFICATIONS RESPONSE----------------------");
+                            crbNotificationList.add(saveProcessedRequest(responseCode,
+                                    "SUCCESS",
+                                    requestBody,
+                                    responseBody
+                            ));
 
+
+                        } else {
+                            log.info(BOARDER_LINE);
+                            log.info("-------------------FAILURE NOTIFICATIONS RESPONSE----------------------");
+                            crbNotificationList.add(saveProcessedRequest(responseCode,
+                                    "FAILED",
+                                    requestBody,
+                                    responseBody
+                            ));
+
+                        }
                     } else {
-                        log.info(BOARDER_LINE);
-                        log.info("-------------------FAILURE NOTIFICATIONS RESPONSE----------------------");
-                        crbNotificationList = saveProcessedRequests(responseCode,
-                                "FAILED",
-                                requestBody,
-                                responseBody
-                        );
+                        log.error(BOARDER_LINE);
+                        log.error("-------------------FAILED IN SENDING REQUEST----------------------");
+                        log.error("CODE: {} : ", responseCode);
+                        log.error(BOARDER_LINE);
+                        log.error("REQUEST SAVED TO FAILURE");
                     }
-                } else {
-                    log.error(BOARDER_LINE);
-                    log.error("-------------------FAILED IN SENDING REQUEST----------------------");
-                    log.error("CODE: {} : ", responseCode);
-                    log.error(BOARDER_LINE);
-                    log.error("REQUEST SAVED TO FAILURE");
                 }
+            } else {
+                log.error("---- ERROR WHILE GETTING RESPONSE FROM COMPLETABLE FUTURE -----");
             }
 
             if (!crbNotificationList.isEmpty()){
                 crbNotificationsRepository.saveAll(crbNotificationList);
+                log.info("-------------------- SAVED :: {} REQUESTS TO DB", crbNotificationList.size());
             }
 
         } else {
@@ -139,8 +153,7 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
     }
 
 
-    private List<CrbNotification> saveProcessedRequests(String responseCode, String statusMessage, String requestBody, String responseBody){
-        List<CrbNotification> crbNotificationList = new ArrayList<>();
+    private CrbNotification saveProcessedRequest(String responseCode, String statusMessage, String requestBody, String responseBody){
 
         log.info(BOARDER_LINE);
         log.info("-------------------SUCCESS NOTIFICATIONS RESPONSE----------------------");
@@ -159,7 +172,7 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
         } catch (SQLException e) {
             log.error("SQLException :: {}", e.getMessage());
         }
-        CrbNotification crbNotification = new CrbNotification(requestBlob,
+        return new CrbNotification(requestBlob,
                 responseBlob,
                 new Date(),
                 "CI",
@@ -168,9 +181,6 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
                 "accountNumber",
                 "accountName",
                 0);
-        crbNotificationList.add(crbNotification);
-
-        return crbNotificationList;
     }
 
 }
