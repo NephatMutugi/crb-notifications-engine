@@ -58,21 +58,14 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
 
         List<String > requests = readRequestsFromFile();
         List<CrbNotification> crbNotificationList = new ArrayList<>();
-
+        long start = System.currentTimeMillis();
 
         if (!requests.isEmpty()){
             // We have some requests
-
-//            CompletableFuture<List<HashMap<String, String>>> completableFuture =httpClient.dumpRequestsToCrb(requests, "CI");
-            List<HashMap<String, String>> responseMapList = httpClient.dumpRequestsToCrb(requests, "CI");
-//            try {
-//                responseMapList = completableFuture.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                log.error("---- ERROR WHILE GETTING RESPONSE FROM COMPLETABLE FUTURE -----");
-//                Thread.currentThread().interrupt();
-//            }
+            List<HashMap<String, String>> responseMapList = httpClient.multiThreadedClient(requests, "CI");
 
             if (responseMapList != null){
+                log.info("NUMBER OF RESPONSES -------------------------{}", responseMapList.size());
                 for (HashMap<String , String> responseMap : responseMapList){
                     String responseCode = responseMap.get(RESPONSE_CODE);
                     String responseBody = responseMap.get(RESPONSE_BODY);
@@ -126,6 +119,10 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
         }
 
 
+        long stop = System.currentTimeMillis();
+
+        log.info(BOARDER_LINE);
+        log.info("----------- TIME TAKEN :{} SECONDS", (stop-start)/1000);
     }
 
 

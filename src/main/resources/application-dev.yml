@@ -49,6 +49,7 @@ sftp:
     http-connection-read-timeout: ${HTTP_CONNECTION_READ_TIMEOUT:60000}
 
 crb:
+#  base-url: ${CRB_TOKEN_BASE_URL:https://secure3.crbafrica.com}
   base-url: ${CRB_TOKEN_BASE_URL:http://172.17.152.67:9545}
   token-base-resource: ${CRB_TOKEN_BASE_RESOURCE:/duv2/login}
   notifications-base-resource: ${CRB_NOTIFICATIONS_BASE_RESOURCE_CONSUMER:/duv2/data/rw/update/consumercredit}
