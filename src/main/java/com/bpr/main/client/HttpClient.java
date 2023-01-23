@@ -12,7 +12,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,6 +26,7 @@ public class HttpClient {
     private static final String RESPONSE_CODE = "RESPONSE_CODE";
     private static final String RESPONSE_BODY = "RESPONSE_BODY";
     private static final String REQUEST_BODY = "REQUEST_BODY";
+    private static final int NUM_THREADS = 50;
     private static final String BOARDER = "=======================================================================================";
     @Value("${crb.consumer-record-type}")
     private String consumerRecordType;
@@ -47,7 +47,7 @@ public class HttpClient {
     }
 
 //    @Async("myExecutor")
-    public CompletableFuture<List<HashMap<String, String>>> dumpRequestsToCrb(List<String> requestList, String recordType) {
+    public List<HashMap<String, String>> dumpRequestsToCrb(List<String> requestList, String recordType) {
         long startTime = System.currentTimeMillis();
         log.info(BOARDER);
         log.info("START SENDING REQUESTS TO CRB :: 50 THREADS");
@@ -56,22 +56,21 @@ public class HttpClient {
 
         List<HashMap<String, String>> mapList = new ArrayList<>();
         HashMap<String, String> responseMap = new HashMap<>();
-        ExecutorService executor = Executors.newFixedThreadPool(50);
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 
         Map<String, String> tokenMap = tokenGenClient.token();
         String tokenResponseCode = tokenMap.get(RESPONSE_CODE);
 
         log.info("TOKEN RESPONSE **** :\n{}", tokenResponseCode);
         if (tokenResponseCode.equals("000")) {
-            log.info("--------Token Stored Successfully----------: {}", tokenResponseCode);
+            log.info("Token Generated Successfully");
 
             String httpMessage;
-            // Set appropriate url depending on the record type
-            String crbUrl = null;
+            String crbUrl;
 
             if (recordType.equals(corporateRecordType)) {
                 crbUrl = customProperties.getBaseUrl() + customProperties.getNotificationsBaseResourceCorporate();
-            } else if (recordType.equals(consumerRecordType)) {
+            } else {
                 crbUrl = customProperties.getBaseUrl() + customProperties.getNotificationsBaseResource();
             }
 
@@ -89,18 +88,19 @@ public class HttpClient {
                 log.error("REST TEMPLATE ERROR : {}", e.getMessage());
             }
 
-            if (crbUrl != null) {
-                if (restTemplate != null) {
-                    for (String request : requestList) {
-                        RestTemplate finalRestTemplate = restTemplate;
-                        String finalCrbUrl = crbUrl;
-                        executor.submit(() ->{
+            if (restTemplate != null) {
+                    RestTemplate finalRestTemplate = restTemplate;
+                    executor.execute(() ->{
+
+                        for (int i=0; i<NUM_THREADS; i++ ){
+                            log.info("THREAD: {}", Thread.currentThread().getName());
+
                             try {
                                 log.info(BOARDER);
-                                log.info("============================= REQUEST NUMBER :: {} =========================", requestList.indexOf(request));
-                                HttpEntity<String> requestEntity = new HttpEntity<>(request, httpHeaders);
+                                log.info("REQUEST NUMBER :: {} ", i+1);
+                                HttpEntity<String> requestEntity = new HttpEntity<>(requestList.get(i), httpHeaders);
                                 ResponseEntity<String> responseEntity = finalRestTemplate.exchange(
-                                        finalCrbUrl,
+                                        crbUrl,
                                         HttpMethod.POST,
                                         requestEntity,
                                         String.class
@@ -113,36 +113,27 @@ public class HttpClient {
                                     responseMap.put(RESPONSE_CODE, "500");
                                 }
                                 responseMap.put(RESPONSE_BODY, responseEntity.getBody());
-                                responseMap.put(REQUEST_BODY, request);
+                                responseMap.put(REQUEST_BODY, requestList.get(i));
                                 mapList.add(responseMap);
                             } catch (Exception e) {
                                 responseMap.put(RESPONSE_CODE, "500");
                                 responseMap.put(RESPONSE_BODY, e.getMessage());
-                                responseMap.put(REQUEST_BODY, request);
+                                responseMap.put(REQUEST_BODY, requestList.get(i));
                                 mapList.add(responseMap);
-                                log.error("EXCEPTION WHILE SENDING REQUESTS TO CRB :: {}", e.getMessage());
+                                log.error("EXCEPTION WHILE SENDING REQUEST TO CRB :: {}", e.getMessage());
                             }
-                        });
-
-                    }
+                        }
 
 
-                } else {
-                    log.error("Error while creating rest template instance");
-                    httpMessage = "Error while creating rest template instance";
+                    });
 
-                    responseMap.put(RESPONSE_CODE, "500");
-                    responseMap.put(RESPONSE_BODY, httpMessage);
-                    mapList.add(responseMap);
-                }
+
             } else {
-                log.error("RECORD TYPE :: {} is invalid", recordType);
-                httpMessage = "Invalid record type provided.";
-
+                log.error("Error while creating rest template instance");
+                httpMessage = "Error while creating rest template instance";
                 responseMap.put(RESPONSE_CODE, "500");
                 responseMap.put(RESPONSE_BODY, httpMessage);
                 mapList.add(responseMap);
-
             }
         } else {
             log.error("ERROR WHEN GENERATING TOKEN");
@@ -159,6 +150,6 @@ public class HttpClient {
         log.info("TIME TAKEN TO SEND {} REQUESTS : {}", requestList.size(), (endTime - startTime) / 1000);
         log.info(BOARDER);
 
-        return CompletableFuture.completedFuture(mapList);
+        return mapList;
     }
 }

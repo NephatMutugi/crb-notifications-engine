@@ -1,6 +1,6 @@
 package com.bpr.main.service.impl;
 
-import com.bpr.main.client.HttpCrbClient;
+import com.bpr.main.client.HttpClient;
 import com.bpr.main.model.CrbNotification;
 import com.bpr.main.model.CrbNotificationResponse;
 import com.bpr.main.repository.CrbNotificationsRepository;
@@ -37,10 +37,10 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
     private static final String REQUEST_BODY = "REQUEST_BODY";
 
     private final Utils utils;
-    private final HttpCrbClient httpClient;
+    private final HttpClient httpClient;
     private final CrbNotificationsRepository crbNotificationsRepository;
 
-    public CrbNotificationsServiceImpl(Utils utils, HttpCrbClient httpClient, CrbNotificationsRepository crbNotificationsRepository) {
+    public CrbNotificationsServiceImpl(Utils utils, HttpClient httpClient, CrbNotificationsRepository crbNotificationsRepository) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.crbNotificationsRepository = crbNotificationsRepository;
@@ -62,7 +62,7 @@ public class CrbNotificationsServiceImpl implements CrbNotificationsService {
 
         if (!requests.isEmpty()){
             // We have some requests
-            List<HashMap<String, String>> responseMapList = httpClient.multiThreadedClient(requests, "CI");
+            List<HashMap<String, String>> responseMapList = httpClient.dumpRequestsToCrb(requests, "CI");
 
             if (responseMapList != null){
                 log.info("NUMBER OF RESPONSES -------------------------{}", responseMapList.size());
